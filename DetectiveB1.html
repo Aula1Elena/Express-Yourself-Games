@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>B1 Crime Scene Investigation - Roleplay Edition</title>
+  <style>
+    :root {
+      --bg-color: #0b0f19;
+      --card-bg: #161e2e;
+      --accent-color: #eab308;
+      --text-color: #f3f4f6;
+      --green: #22c55e;
+      --red: #ef4444;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background-color: var(--bg-color);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 950px;
+      width: 100%;
+      text-align: center;
+    }
+
+    h1 {
+      color: var(--accent-color);
+      font-size: 2.2rem;
+      margin: 0 0 5px 0;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    p.subtitle {
+      color: #9ca3af;
+      margin-bottom: 20px;
+      font-size: 1.05rem;
+    }
+
+    .case-title {
+      background: rgba(234, 179, 8, 0.15);
+      border: 1px solid var(--accent-color);
+      color: var(--accent-color);
+      padding: 10px 20px;
+      border-radius: 30px;
+      display: inline-block;
+      font-weight: bold;
+      margin-bottom: 20px;
+      font-size: 1.2rem;
+    }
+
+    /* Sección de Clues y Grammar */
+    .top-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 25px;
+      text-align: left;
+    }
+
+    .info-card {
+      background: var(--card-bg);
+      border: 2px solid #2d3748;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+    }
+
+    .card-header {
+      font-size: 0.9rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      color: #38bdf8;
+    }
+
+    .grammar-card {
+      border-color: #ec4899;
+      background: rgba(236, 72, 153, 0.08);
+    }
+    .grammar-card .card-header { color: #ec4899; }
+
+    /* Grid de Tarjetas de Sospechosos */
+    .suspects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .suspect-card {
+      background: #1e293b;
+      border: 2px solid var(--accent-color);
+      border-radius: 16px;
+      padding: 20px 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 180px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+    }
+
+    .suspect-name {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #fff;
+      margin-bottom: 5px;
+    }
+
+    .role-badge {
+      font-size: 0.85rem;
+      background: rgba(255,255,255,0.1);
+      padding: 4px 10px;
+      border-radius: 12px;
+      color: #cbd5e1;
+      margin-bottom: 12px;
+    }
+
+    .secret-box {
+      width: 100%;
+      background: #0f172a;
+      border: 1px dashed #475569;
+      border-radius: 10px;
+      padding: 12px 8px;
+      font-size: 0.95rem;
+      display: none;
+      margin-bottom: 10px;
+      line-height: 1.3;
+    }
+
+    .secret-box.guilty {
+      border-color: var(--red);
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+    }
+
+    .secret-box.innocent {
+      border-color: var(--green);
+      background: rgba(34, 197, 94, 0.15);
+      color: #86efac;
+    }
+
+    .btn-flip {
+      background: #334155;
+      color: #fff;
+      border: 1px solid #475569;
+      padding: 8px 14px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-flip:hover { background: #475569; }
+
+    /* Solution Box */
+    .solution-box {
+      display: none;
+      background: rgba(34, 197, 94, 0.15);
+      border: 2px solid var(--green);
+      color: #4ade80;
+      padding: 20px;
+      border-radius: 16px;
+      margin-bottom: 25px;
+      font-size: 1.1rem;
+      text-align: left;
+    }
+
+    /* Controles generales */
+    .controls {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    button.btn-main {
+      background: var(--accent-color);
+      color: #000;
+      border: none;
+      padding: 14px 28px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: transform 0.2s, background 0.2s;
+    }
+    button.btn-main:hover { transform: scale(1.05); background: #fde047; }
+    button.btn-reveal { background: var(--green); color: #fff; }
+    button.btn-reveal:hover { background: #4ade80; }
+    button.btn-setup { background: #38bdf8; color: #0f172a; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>🔍 Detective B1: Mystery Solver</h1>
+    <p class="subtitle">Examine clues, secretly check your role, and deduce who is guilty!</p>
+
+    <div class="case-title" id="caseTitle">Press 'NEW CASE' to start!</div>
+
+    <!-- Pistas y Gramática Target -->
+    <div class="top-grid">
+      <div class="info-card">
+        <div class="card-header">📌 Crime Scene Clues</div>
+        <div id="cluesText">Press 'NEW CASE' to reveal clues.</div>
+      </div>
+      <div class="info-card grammar-card">
+        <div class="card-header">⭐ Target Deduction Grammar</div>
+        <div id="grammarText">Use <b>MUST BE / CAN'T BE / MIGHT BE</b> and <b>PAST CONTINUOUS</b> to discuss.</div>
+      </div>
+    </div>
+
+    <!-- Tarjetas de Jugadores (Secret Role Cards) -->
+    <div class="suspects-grid" id="suspectsGrid"></div>
+
+    <div class="solution-box" id="solutionBox"></div>
+
+    <div class="controls">
+      <button class="btn-main" onclick="generateCase()">NEW CASE 📁</button>
+      <button class="btn-main btn-reveal" onclick="revealSolution()">REVEAL GUILTY SUSPECT 🔓</button>
+      <button class="btn-main btn-setup" onclick="setupPlayers()">⚙️ SET PLAYERS</button>
+    </div>
+  </div>
+
+  <script>
+    let players = ["Elena", "Maria", "Sofia"];
+    let currentCase = null;
+
+    const caseTemplates = [
+      {
+        title: "The Stolen Diamond Necklace",
+        clues: "• Wet footprints near the safe.<br>• An umbrella left at the front door.<br>• Broken glass on the floor.",
+        innocentAlibis: [
+          "I was cooking in the kitchen all evening.",
+          "I was reading a book in the living room.",
+          "I was talking on the phone in my bedroom.",
+          "I was listening to music with my headphones on."
+        ],
+        guiltyAlibi: "I claim I was sleeping, BUT I was actually outside cleaning the garden in the rain!",
+        reason: "The wet footprints and umbrella prove the guilty person was outside in the rain!"
+      },
+      {
+        title: "The Missing Museum Painting",
+        clues: "• The alarm wire was cut with sharp scissors.<br>• Smell of expensive perfume near the frame.<br>• A plane ticket dropped on the rug.",
+        innocentAlibis: [
+          "I was drinking coffee downstairs in the cafeteria.",
+          "I was marking exams in my office.",
+          "I was cleaning the main hall with a mop."
+        ],
+        guiltyAlibi: "I was wearing strong expensive perfume and carrying scissors in my bag!",
+        reason: "The cut wires and the perfume smell match the guilty person's belongings!"
+      },
+      {
+        title: "The Golden Trophy Heist",
+        clues: "• Muddy shoe prints on the carpet.<br>• A dog collar found under the table.<br>• A half-eaten sandwich on the desk.",
+        innocentAlibis: [
+          "I was working on my computer in the office.",
+          "I was eating lunch in the cafeteria.",
+          "I was driving home on the highway."
+        ],
+        guiltyAlibi: "I was walking my dog in the muddy park and lost its collar!",
+        reason: "The mud and the dog collar belong to the guilty person who was in the park!"
+      }
+    ];
+
+    function setupPlayers() {
+      const countInput = prompt("How many players? (2 to 6)", players.length);
+      const count = parseInt(countInput);
+
+      if (count && count >= 2 && count <= 6) {
+        players = [];
+        for (let i = 1; i <= count; i++) {
+          const name = prompt(`Enter name for Player ${i}:`, `Player ${i}`);
+          players.push(name && name.trim() !== "" ? name : `Player ${i}`);
+        }
+        generateCase();
+      }
+    }
+
+    function generateCase() {
+      if (players.length < 2) return;
+
+      // Seleccionar un caso al azar
+      const tmpl = caseTemplates[Math.floor(Math.random() * caseTemplates.length)];
+      
+      // Asignar Detective y Sospechosos
+      const detectiveIndex = Math.floor(Math.random() * players.length);
+      
+      // Seleccionar culpable entre los sospechosos
+      let suspectIndices = [];
+      for (let i = 0; i < players.length; i++) {
+        if (i !== detectiveIndex) suspectIndices.push(i);
+      }
+      const guiltyIndex = suspectIndices[Math.floor(Math.random() * suspectIndices.length)];
+
+      currentCase = {
+        title: tmpl.title,
+        clues: tmpl.clues,
+        guiltyName: players[guiltyIndex],
+        reason: tmpl.reason,
+        roles: {}
+      };
+
+      let alibiPool = [...tmpl.innocentAlibis];
+
+      players.forEach((pName, idx) => {
+        if (idx === detectiveIndex) {
+          currentCase.roles[pName] = { isDetective: true, isGuilty: false, alibi: "Lead Detective: Question all suspects!" };
+        } else if (idx === guiltyIndex) {
+          currentCase.roles[pName] = { isDetective: false, isGuilty: true, alibi: tmpl.guiltyAlibi };
+        } else {
+          const randomAlibi = alibiPool.length > 0 ? alibiPool.pop() : "I was doing my job peacefully.";
+          currentCase.roles[pName] = { isDetective: false, isGuilty: false, alibi: randomAlibi };
+        }
+      });
+
+      renderUI();
+    }
+
+    function renderUI() {
+      document.getElementById('caseTitle').innerText = currentCase.title;
+      document.getElementById('cluesText').innerHTML = currentCase.clues;
+      document.getElementById('solutionBox').style.display = "none";
+
+      const grid = document.getElementById('suspectsGrid');
+      grid.innerHTML = "";
+
+      players.forEach((pName) => {
+        const r = currentCase.roles[pName];
+        const card = document.createElement('div');
+        card.className = "suspect-card";
+
+        let roleBadge = r.isDetective ? "🕵️ Lead Detective" : "👤 Suspect";
+        let secretText = r.isDetective ? "🔎 You are the Detective! Lead the questioning." : (r.isGuilty ? `🚨 YOU ARE GUILTY!<br><b>Alibi:</b> "${r.alibi}"` : `✅ YOU ARE INNOCENT.<br><b>Alibi:</b> "${r.alibi}"`);
+        let boxClass = r.isDetective ? "secret-box" : (r.isGuilty ? "secret-box guilty" : "secret-box innocent");
+
+        card.innerHTML = `
+          <div class="suspect-name">${pName}</div>
+          <div class="role-badge">${roleBadge}</div>
+          <div class="${boxClass}" id="secret-${pName}">
+            ${secretText}
+          </div>
+          <button class="btn-flip" onclick="toggleSecret('${pName}', this)">🔒 REVEAL ROLE (PRIVATE)</button>
+        `;
+
+        grid.appendChild(card);
+      });
+    }
+
+    function toggleSecret(pName, btn) {
+      const box = document.getElementById(`secret-${pName}`);
+      if (box.style.display === "block") {
+        box.style.display = "none";
+        btn.innerText = "🔒 REVEAL ROLE (PRIVATE)";
+        btn.style.background = "#334155";
+      } else {
+        box.style.display = "block";
+        btn.innerText = "🙈 HIDE ROLE";
+        btn.style.background = "#eab308";
+        btn.style.color = "#000";
+      }
+    }
+
+    function revealSolution() {
+      if (!currentCase) return;
+      const solBox = document.getElementById('solutionBox');
+      solBox.innerHTML = `💡 <b>GUILTY SUSPECT: ${currentCase.guiltyName}!</b><br>${currentCase.reason}`;
+      solBox.style.display = "block";
+    }
+
+    // Inicializar primera partida
+    generateCase();
+  </script>
+</body>
+</html>
