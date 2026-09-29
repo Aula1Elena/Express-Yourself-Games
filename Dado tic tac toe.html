@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>English Grammar Dice Roller</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      --text: #f8fafc;
+      --text-dim: #94a3b8;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      margin-bottom: 8px;
+      font-size: 1.8rem;
+    }
+
+    p.subtitle {
+      color: var(--text-dim);
+      margin-top: 0;
+      margin-bottom: 30px;
+    }
+
+    .dice-container {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+
+    .die-card {
+      background: var(--card-bg);
+      border: 2px solid #334155;
+      border-radius: 12px;
+      padding: 20px;
+      width: 180px;
+      text-align: center;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .die-card.rolling {
+      animation: shake 0.4s ease-in-out infinite;
+    }
+
+    @keyframes shake {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      25% { transform: translate(-3px, 3px) rotate(-3deg); }
+      50% { transform: translate(3px, -3px) rotate(3deg); }
+      75% { transform: translate(-3px, -3px) rotate(-1deg); }
+      100% { transform: translate(0, 0) rotate(0deg); }
+    }
+
+    .die-title {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+    }
+
+    .die-value {
+      font-size: 1.25rem;
+      font-weight: bold;
+      color: var(--accent);
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    button {
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      padding: 14px 32px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.4);
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    button:hover {
+      background-color: var(--accent-hover);
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    .verb-suggestion {
+      margin-top: 25px;
+      padding: 12px 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      color: var(--text-dim);
+    }
+
+    .verb-highlight {
+      color: #38bdf8;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Grammar Dice Roller</h1>
+  <p class="subtitle">Roll the dice to generate a random grammar challenge</p>
+
+  <div class="dice-container">
+    <div class="die-card" id="die1">
+      <div class="die-title">Pronoun</div>
+      <div class="die-value" id="val-pronoun">I</div>
+    </div>
+    
+    <div class="die-card" id="die2">
+      <div class="die-title">Tense</div>
+      <div class="die-value" id="val-tense">Present Simple</div>
+    </div>
+    
+    <div class="die-card" id="die3">
+      <div class="die-title">Form</div>
+      <div class="die-value" id="val-form">Affirmative (+)</div>
+    </div>
+  </div>
+
+  <button onclick="rollAllDice()">Roll All Dice</button>
+
+  <div class="verb-suggestion">
+    Suggested Verb: <span class="verb-highlight" id="suggested-verb">play</span>
+  </div>
+
+  <script>
+    const pronouns = ["I", "YOU", "HE", "SHE", "IT", "WE", "THEY"];
+    const tenses = ["Present Simple", "Present Continuous"];
+    const forms = ["Affirmative (+)", "Negative (-)", "Question (?)"];
+    const verbs = ["play", "study", "watch", "cook", "read", "run", "work", "listen", "dance", "write"];
+
+    function getRandomItem(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function rollAllDice() {
+      const cards = Array.from(document.querySelectorAll('.die-card'));
+      cards.forEach(card => card.classList.add('rolling'));
+
+      setTimeout(() => {
+        document.getElementById('val-pronoun').textContent = getRandomItem(pronouns);
+        document.getElementById('val-tense').textContent = getRandomItem(tenses);
+        document.getElementById('val-form').textContent = getRandomItem(forms);
+        document.getElementById('suggested-verb').textContent = getRandomItem(verbs);
+        
+        cards.forEach(card => card.classList.remove('rolling'));
+      }, 400);
+    }
+  </script>
+
+</body>
+</html>
