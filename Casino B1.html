@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>The B1 Grammar Casino - Random Deck Edition</title>
+  <style>
+    :root {
+      --bg-color: #064e3b;
+      --card-bg: #022c22;
+      --gold: #fbbf24;
+      --green: #22c55e;
+      --red: #ef4444;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle, #065f46 0%, #022c22 100%);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      color: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 950px;
+      width: 100%;
+      text-align: center;
+    }
+
+    h1 {
+      color: var(--gold);
+      font-size: 2.3rem;
+      margin: 0 0 5px 0;
+      text-shadow: 0 2px 10px rgba(251, 191, 36, 0.3);
+      letter-spacing: 2px;
+    }
+
+    p.subtitle {
+      color: #a7f3d0;
+      margin-bottom: 20px;
+      font-size: 1.05rem;
+    }
+
+    /* Panel Dinámico de Jugadores */
+    .scoreboard {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+      margin-bottom: 25px;
+    }
+
+    .player-card {
+      background: rgba(0, 0, 0, 0.5);
+      border: 2px solid var(--gold);
+      border-radius: 15px;
+      padding: 12px 18px;
+      min-width: 140px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      backdrop-filter: blur(5px);
+    }
+
+    .player-name {
+      font-size: 1rem;
+      font-weight: bold;
+      color: #f8fafc;
+      margin-bottom: 4px;
+      text-transform: capitalize;
+    }
+
+    .player-bank {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+
+    .score-btns {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+    }
+
+    .btn-score {
+      border: none;
+      padding: 4px 10px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #fff;
+    }
+
+    .btn-plus { background: var(--green); }
+    .btn-minus { background: var(--red); }
+    .btn-score:hover { opacity: 0.85; }
+
+    /* Tarjeta de la frase */
+    .casino-card {
+      background: var(--card-bg);
+      border: 3px solid var(--gold);
+      border-radius: 20px;
+      padding: 30px 25px;
+      margin-bottom: 20px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+      min-height: 130px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .sentence {
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: #ffffff;
+      line-height: 1.4;
+    }
+
+    .explanation {
+      margin-top: 15px;
+      font-size: 1.15rem;
+      font-weight: bold;
+      padding: 10px 15px;
+      border-radius: 10px;
+      display: none;
+    }
+
+    .explanation.correct {
+      background: rgba(34, 197, 94, 0.2);
+      color: var(--green);
+      border: 1px solid var(--green);
+    }
+
+    .explanation.incorrect {
+      background: rgba(239, 68, 68, 0.2);
+      color: var(--red);
+      border: 1px solid var(--red);
+    }
+
+    /* Panel de Apuestas */
+    .betting-panel {
+      background: rgba(0, 0, 0, 0.35);
+      padding: 15px;
+      border-radius: 15px;
+      margin-bottom: 20px;
+      display: inline-block;
+    }
+
+    .bet-title {
+      font-size: 0.95rem;
+      color: #a7f3d0;
+      margin-bottom: 8px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .chip-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .chip {
+      background: #047857;
+      border: 2px dashed var(--gold);
+      color: #fff;
+      padding: 8px 16px;
+      font-weight: bold;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .chip:hover {
+      transform: scale(1.08);
+      background: #059669;
+    }
+
+    .chip.selected {
+      background: var(--gold);
+      color: #000;
+      border-style: solid;
+    }
+
+    /* Controles */
+    .controls {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    button.btn-action {
+      background: var(--gold);
+      color: #000;
+      border: none;
+      padding: 14px 28px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: transform 0.2s;
+      box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
+    }
+
+    button.btn-action:hover {
+      transform: scale(1.05);
+      background: #fde047;
+    }
+
+    button.btn-setup {
+      background: #38bdf8;
+      color: #0f172a;
+    }
+
+    button.btn-shuffle {
+      background: #a855f7;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>🎰 The B1 Grammar Casino</h1>
+    <p class="subtitle" id="deckTracker">50 Sentences Shuffled & Loaded</p>
+
+    <!-- Marcador Dinámico de Jugadores -->
+    <div class="scoreboard" id="scoreboard"></div>
+
+    <!-- Tarjeta de Frase -->
+    <div class="casino-card">
+      <div class="sentence" id="sentenceText">Press NEXT CARD to start playing!</div>
+      <div class="explanation" id="explainText"></div>
+    </div>
+
+    <!-- Selección de Valor de Apuesta -->
+    <div class="betting-panel">
+      <div class="bet-title">Current Bet Amount: <span id="currentBetDisplay" style="color:var(--gold);">$250</span></div>
+      <div class="chip-buttons">
+        <div class="chip" onclick="setBet(100)">$100</div>
+        <div class="chip selected" onclick="setBet(250)">$250</div>
+        <div class="chip" onclick="setBet(500)">$500</div>
+      </div>
+    </div>
+
+    <!-- Controles -->
+    <div class="controls">
+      <button class="btn-action" onclick="revealAnswer()">REVEAL ANSWER 🔍</button>
+      <button class="btn-action" onclick="nextCard()">NEXT CARD ➔</button>
+      <button class="btn-action btn-shuffle" onclick="shuffleAndReset()">🔀 SHUFFLE DECK</button>
+      <button class="btn-action btn-setup" onclick="setupPlayers()">⚙️ SET PLAYERS</button>
+    </div>
+  </div>
+
+  <script>
+    // 50 Oraciones B1
+    const rawDeck = [
+      { text: "I was driving home when suddenly my car broke down.", isCorrect: true, reason: "✅ PERFECT! Great combination of Past Continuous + Past Simple with 'when' and a phrasal verb." },
+      { text: "She depends of her parents to pay for her studies.", isCorrect: false, reason: "❌ INCORRECT! In English we say 'depend ON', not 'depend of'." },
+      { text: "If I win the lottery, I would buy a huge house in Italy.", isCorrect: false, reason: "❌ INCORRECT! Mixed conditionals! Use 'If I win... I WILL buy' OR 'If I won... I WOULD buy'." },
+      { text: "Although it was raining heavily, we went for a walk in the park.", isCorrect: true, reason: "✅ PERFECT! 'Although' is used correctly to show contrast between two ideas." },
+      { text: "I am looking forward to see you next weekend!", isCorrect: false, reason: "❌ INCORRECT! After 'look forward to', we always use the verb in -ING: 'looking forward to SEEING you'." },
+      { text: "He shouldn't have bought that expensive watch yesterday.", isCorrect: true, reason: "✅ PERFECT! Modal verb in past regret: Should + have + past participle." },
+      { text: "We have lived in this city since five years.", isCorrect: false, reason: "❌ INCORRECT! Use 'FOR' for a duration of time (for five years) and 'SINCE' for a specific starting point." },
+      { text: "They aren't allowed to use their mobile phones during the exam.", isCorrect: true, reason: "✅ PERFECT! Correct passive structure for rules using 'allowed to'." },
+      { text: "I'm interested on learning more about digital marketing.", isCorrect: false, reason: "❌ INCORRECT! The correct preposition is 'interested IN'." },
+      { text: "If I were you, I would talk to the manager immediately.", isCorrect: true, reason: "✅ PERFECT! Second conditional used correctly for giving advice (If I were you... I would)." },
+      { text: "She has been working here since January.", isCorrect: true, reason: "✅ PERFECT! Present Perfect Continuous with 'since' for a continuous action starting at a point in the past." },
+      { text: "He explained me the rules of the game very clearly.", isCorrect: false, reason: "❌ INCORRECT! In English, we say 'He explained the rules TO me' or 'He explained to me...'." },
+      { text: "We decided to give up sugar for one month.", isCorrect: true, reason: "✅ PERFECT! Correct use of the phrasal verb 'give up' (stop doing something)." },
+      { text: "There aren't many people in the museum today.", isCorrect: true, reason: "✅ PERFECT! Correct use of 'many' with plural countable nouns (people)." },
+      { text: "I didn't used to like vegetables when I was young.", isCorrect: false, reason: "❌ INCORRECT! In negative sentences with 'did', use base form: 'didn't USE to'." },
+      { text: "While I was studying, my brother was playing video games.", isCorrect: true, reason: "✅ PERFECT! Two simultaneous past actions connected with 'while' using Past Continuous." },
+      { text: "She is famous by her incredible singing voice.", isCorrect: false, reason: "❌ INCORRECT! The adjective 'famous' takes the preposition 'FOR' (famous for)." },
+      { text: "You don't have to pay for the entrance, it's completely free.", isCorrect: true, reason: "✅ PERFECT! 'Don't have to' correctly expresses lack of obligation." },
+      { text: "If you study hard, you pass the B1 examination.", isCorrect: false, reason: "❌ INCORRECT! First Conditional needs 'will': 'If you study hard, you WILL pass'." },
+      { text: "The new airport was opened by the mayor yesterday.", isCorrect: true, reason: "✅ PERFECT! Passive voice in Past Simple (was + past participle)." },
+      { text: "I haven't eaten sushi never in my life.", isCorrect: false, reason: "❌ INCORRECT! Double negative! Say 'I haven't EVER eaten' OR 'I have NEVER eaten'." },
+      { text: "She was so tired that she fell asleep on the bus.", isCorrect: true, reason: "✅ PERFECT! Result clause using 'so + adjective + that'." },
+      { text: "He told to me that he was going to arrive late.", isCorrect: false, reason: "❌ INCORRECT! The verb 'tell' takes a direct object without 'to': 'He told me that...'." },
+      { text: "We have already finished our homework for tomorrow.", isCorrect: true, reason: "✅ PERFECT! Correct placement of 'already' between 'have' and the participle." },
+      { text: "Unless you hurry up, we will miss the train.", isCorrect: true, reason: "✅ PERFECT! 'Unless' means 'if not' and takes a positive verb structure." },
+      { text: "This laptop is more cheaper than the one I bought last year.", isCorrect: false, reason: "❌ INCORRECT! Double comparative! 'Cheaper' is already comparative, don't use 'more'." },
+      { text: "I must to finish this report before 5 PM.", isCorrect: false, reason: "❌ INCORRECT! Modal verbs like 'must' are followed by the infinitive WITHOUT 'to'." },
+      { text: "The girl who lives next door is a professional dancer.", isCorrect: true, reason: "✅ PERFECT! Relative clause using 'who' for people." },
+      { text: "We arrived to the hotel very late last night.", isCorrect: false, reason: "❌ INCORRECT! Use 'arrive AT' (for places) or 'arrive IN' (for cities/countries), not 'to'." },
+      { text: "I might go to the beach tomorrow if the weather is nice.", isCorrect: true, reason: "✅ PERFECT! Modal verb 'might' expressing future possibility." },
+      { text: "He has been to Paris three times this year.", isCorrect: true, reason: "✅ PERFECT! 'Has been to' means he visited and returned." },
+      { text: "She doesn't mind to help us with the presentation.", isCorrect: false, reason: "❌ INCORRECT! The verb 'mind' is followed by -ING: 'mind HELPING us'." },
+      { text: "Despite the traffic was heavy, we arrived on time.", isCorrect: false, reason: "❌ INCORRECT! 'Despite' is followed by a noun/-ING. Use 'Although the traffic was...' OR 'Despite the heavy traffic'." },
+      { text: "I haven't seen my best friend since two months.", isCorrect: false, reason: "❌ INCORRECT! Use 'FOR' for time periods (for two months)." },
+      { text: "You should turn off the lights before you leave.", isCorrect: true, reason: "✅ PERFECT! Correct advice modal + phrasal verb 'turn off'." },
+      { text: "I'm fed up of doing the same routine every day.", isCorrect: false, reason: "❌ INCORRECT! The correct expression is 'fed up WITH'." },
+      { text: "If we had more time, we could visit the museum.", isCorrect: true, reason: "✅ PERFECT! Second conditional expressing hypothetical situations." },
+      { text: "My sister is very good in playing tennis.", isCorrect: false, reason: "❌ INCORRECT! The correct preposition is 'good AT'." },
+      { text: "I was sleeping when the alarm went off.", isCorrect: true, reason: "✅ PERFECT! Past continuous interrupted by a past simple action." },
+      { text: "She has just called to say she is coming.", isCorrect: true, reason: "✅ PERFECT! Use of 'just' for recent events with Present Perfect." },
+      { text: "There is too many noise in this room.", isCorrect: false, reason: "❌ INCORRECT! 'Noise' is uncountable, so use 'too MUCH noise'." },
+      { text: "He promised to call me as soon as he arrives.", isCorrect: true, reason: "✅ PERFECT! Correct time clause structure with 'as soon as' + Present Simple for future." },
+      { text: "I'm afraid about dogs since I was little.", isCorrect: false, reason: "❌ INCORRECT! The adjective 'afraid' takes 'OF' (afraid of dogs)." },
+      { text: "This is the most interesting book I have ever read.", isCorrect: true, reason: "✅ PERFECT! Superlative combined with Present Perfect + 'ever'." },
+      { text: "They suggested to go to the cinema tonight.", isCorrect: false, reason: "❌ INCORRECT! 'Suggest' is followed by -ING or a clause: 'suggested GOING' or 'suggested that we go'." },
+      { text: "He was wearing a jacket even though it was very hot.", isCorrect: true, reason: "✅ PERFECT! Correct contrast linker 'even though'." },
+      { text: "I am used to get up early every morning.", isCorrect: false, reason: "❌ INCORRECT! 'Be used to' (habituation) is followed by -ING: 'used to GETTING up'." },
+      { text: "The letter was sent two days ago.", isCorrect: true, reason: "✅ PERFECT! Past Simple passive voice + time expression 'ago'." },
+      { text: "She asked me where did I live.", isCorrect: false, reason: "❌ INCORRECT! Reported question order! Say 'She asked me where I LIVED'." },
+      { text: "I look forward to hearing from you soon.", isCorrect: true, reason: "✅ PERFECT! Standard B1 formal ending with 'to hearing'." }
+    ];
+
+    let activeDeck = [];
+    let currentCardIndex = -1;
+    let currentBet = 250;
+    let players = [
+      { name: "Player 1", bank: 1000 },
+      { name: "Player 2", bank: 1000 },
+      { name: "Player 3", bank: 1000 }
+    ];
+
+    // Algoritmo de barajado aleatorio (Fisher-Yates)
+    function shuffleArray(array) {
+      let shuffled = [...array];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    }
+
+    function shuffleAndReset() {
+      activeDeck = shuffleArray(rawDeck);
+      currentCardIndex = -1;
+      document.getElementById('sentenceText').innerText = "Deck shuffled! Press NEXT CARD to start.";
+      document.getElementById('explainText').style.display = "none";
+      document.getElementById('deckTracker').innerText = `Deck Shuffled! 50 Cards Ready`;
+    }
+
+    function setupPlayers() {
+      const countInput = prompt("How many players? (1 to 6)", players.length);
+      const count = parseInt(countInput);
+
+      if (count && count >= 1 && count <= 6) {
+        players = [];
+        for (let i = 1; i <= count; i++) {
+          const name = prompt(`Enter name for Player ${i}:`, `Player ${i}`);
+          players.push({
+            name: name && name.trim() !== "" ? name : `Player ${i}`,
+            bank: 1000
+          });
+        }
+        renderScoreboard();
+      }
+    }
+
+    function renderScoreboard() {
+      const board = document.getElementById('scoreboard');
+      board.innerHTML = "";
+
+      players.forEach((p, index) => {
+        const card = document.createElement('div');
+        card.className = 'player-card';
+        card.innerHTML = `
+          <div class="player-name">${p.name}</div>
+          <div class="player-bank">$${p.bank}</div>
+          <div class="score-btns">
+            <button class="btn-score btn-plus" onclick="updateBank(${index}, true)" title="Win Bet">+$${currentBet}</button>
+            <button class="btn-score btn-minus" onclick="updateBank(${index}, false)" title="Lose Bet">-$${currentBet}</button>
+          </div>
+        `;
+        board.appendChild(card);
+      });
+    }
+
+    function updateBank(index, isWin) {
+      if (isWin) {
+        players[index].bank += currentBet;
+      } else {
+        players[index].bank -= currentBet;
+        if (players[index].bank < 0) players[index].bank = 0;
+      }
+      renderScoreboard();
+    }
+
+    function setBet(amount) {
+      currentBet = amount;
+      document.getElementById('currentBetDisplay').innerText = `$${amount}`;
+      const chips = document.querySelectorAll('.chip');
+      chips.forEach(c => c.classList.remove('selected'));
+      event.target.classList.add('selected');
+      renderScoreboard();
+    }
+
+    function nextCard() {
+      if (activeDeck.length === 0) {
+        shuffleAndReset();
+      }
+
+      currentCardIndex = (currentCardIndex + 1) % activeDeck.length;
+      const card = activeDeck[currentCardIndex];
+      document.getElementById('sentenceText').innerText = `"${card.text}"`;
+      
+      const explainEl = document.getElementById('explainText');
+      explainEl.style.display = "none";
+      explainEl.innerText = "";
+
+      const remaining = activeDeck.length - (currentCardIndex + 1);
+      document.getElementById('deckTracker').innerText = `Card ${currentCardIndex + 1} of 50 (${remaining} remaining in this deck)`;
+    }
+
+    function revealAnswer() {
+      if (currentCardIndex === -1) return;
+      const card = activeDeck[currentCardIndex];
+      const explainEl = document.getElementById('explainText');
+      explainEl.innerText = card.reason;
+      explainEl.className = "explanation " + (card.isCorrect ? "correct" : "incorrect");
+      explainEl.style.display = "block";
+    }
+
+    // Inicializar barajado y marcador
+    shuffleAndReset();
+    renderScoreboard();
+  </script>
+</body>
+</html>
