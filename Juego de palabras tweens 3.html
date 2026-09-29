@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Word Party! - 3º Primaria</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #ff9a9e, #fecfef, #a1c4fd);
+      font-family: 'Comic Sans MS', 'Chalkboard SE', 'Arial', sans-serif;
+      overflow: hidden;
+      color: #333;
+    }
+
+    #header {
+      position: absolute;
+      top: 15px;
+      left: 20px;
+      z-index: 10;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 10px 22px;
+      border-radius: 25px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 26px;
+      color: #ff3366;
+      text-shadow: 1px 1px 0px #fff;
+    }
+
+    p {
+      margin: 2px 0 0 0;
+      font-size: 15px;
+      color: #444;
+      font-weight: bold;
+    }
+
+    #controls {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      z-index: 10;
+    }
+
+    button {
+      background: #00d2d3;
+      border: 3px solid #fff;
+      color: white;
+      padding: 12px 24px;
+      font-size: 18px;
+      font-weight: bold;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    button:hover {
+      transform: scale(1.1);
+      background: #54a0ff;
+    }
+
+    #game-container {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+
+    .word-bubble {
+      position: absolute;
+      padding: 14px 22px;
+      border-radius: 35px;
+      font-size: 22px;
+      font-weight: bold;
+      user-select: none;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+      border: 3px solid #fff;
+      white-space: nowrap;
+    }
+
+    /* Colores claros e intuitivos */
+    .subject { background: #54a0ff; color: #fff; }   /* Azul - Personas / Sujetos */
+    .like { background: #ff6b6b; color: #fff; }      /* Rosa/Rojo - Verbos clave */
+    .action { background: #ff9f43; color: #fff; }    /* Naranja - Acciones */
+    .object { background: #1dd1a1; color: #fff; }    /* Verde - Animales / Comida */
+    .detail { background: #feca57; color: #222; }    /* Amarillo - Colores / Lugares */
+  </style>
+</head>
+<body>
+
+  <div id="header">
+    <h1>⭐ Word Party! ⭐</h1>
+    <p>3rd Grade English - Build your sentence!</p>
+  </div>
+
+  <div id="controls">
+    <button id="pause-btn" onclick="togglePause()">❄️ PARAR</button>
+  </div>
+
+  <div id="game-container"></div>
+
+  <script>
+    // Vocabulario adaptado a 3.º de Primaria (25 palabras clave)
+    const words = [
+      // Sujetos
+      { text: "My mom", type: "subject" },
+      { text: "The cat", type: "subject" },
+      { text: "I", type: "subject" },
+      { text: "He", type: "subject" },
+      { text: "She", type: "subject" },
+      { text: "My brother", type: "subject" },
+
+      // Verbos clave (Likes, Have got, To Be, Can)
+      { text: "likes", type: "like" },
+      { text: "has got", type: "like" },
+      { text: "is", type: "like" },
+      { text: "can", type: "like" },
+      { text: "doesn't like", type: "like" },
+
+      // Acciones sencillas
+      { text: "run", type: "action" },
+      { text: "jump", type: "action" },
+      { text: "eat", type: "action" },
+      { text: "play", type: "action" },
+
+      // Animales / Comida / Cosas
+      { text: "apples", type: "object" },
+      { text: "a big dog", type: "object" },
+      { text: "milk", type: "object" },
+      { text: "a red ball", type: "object" },
+      { text: "pizza", type: "object" },
+
+      // Detalles / Colores / Conectores
+      { text: "happy", type: "detail" },
+      { text: "in the garden", type: "detail" },
+      { text: "very fast", type: "detail" },
+      { text: "and", type: "detail" },
+      { text: "but", type: "detail" }
+    ];
+
+    const container = document.getElementById('game-container');
+    const elements = [];
+    let isPaused = false;
+
+    // Crear las burbujas
+    words.forEach(item => {
+      const el = document.createElement('div');
+      el.className = `word-bubble ${item.type}`;
+      el.innerText = item.text;
+      container.appendChild(el);
+
+      const rect = el.getBoundingClientRect();
+      
+      // Velocidad reducida (2.2) para darles más tiempo de lectura
+      const speed = 2.2;
+
+      const obj = {
+        element: el,
+        x: Math.random() * (window.innerWidth - rect.width - 40) + 20,
+        y: Math.random() * (window.innerHeight - rect.height - 100) + 80,
+        dx: (Math.random() - 0.5) * speed,
+        dy: (Math.random() - 0.5) * speed,
+        width: rect.width,
+        height: rect.height
+      };
+
+      elements.push(obj);
+    });
+
+    // Bucle de animación
+    function animate() {
+      if (!isPaused) {
+        elements.forEach(obj => {
+          obj.x += obj.dx;
+          obj.y += obj.dy;
+
+          // Rebote horizontal
+          if (obj.x <= 10 || obj.x + obj.width >= window.innerWidth - 10) {
+            obj.dx *= -1;
+          }
+
+          // Rebote vertical
+          if (obj.y <= 80 || obj.y + obj.height >= window.innerHeight - 10) {
+            obj.dy *= -1;
+          }
+
+          obj.element.style.left = `${obj.x}px`;
+          obj.element.style.top = `${obj.y}px`;
+        });
+      }
+      requestAnimationFrame(animate);
+    }
+
+    function togglePause() {
+      isPaused = !isPaused;
+      document.getElementById('pause-btn').innerText = isPaused ? "▶️ MOVER" : "❄️ PARAR";
+    }
+
+    animate();
+  </script>
+</body>
+</html>

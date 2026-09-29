@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Floating Words - High A2 Challenge</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
+      color: #fff;
+    }
+
+    #header {
+      position: absolute;
+      top: 15px;
+      left: 20px;
+      z-index: 10;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      color: #00ffcc;
+      text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+    }
+
+    p {
+      margin: 5px 0 0 0;
+      font-size: 14px;
+      color: #ddd;
+    }
+
+    #controls {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      z-index: 10;
+    }
+
+    button {
+      background: #ff007f;
+      border: none;
+      color: white;
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: bold;
+      border-radius: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(255, 0, 127, 0.4);
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      background: #ff5252;
+    }
+
+    #game-container {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+
+    .word-bubble {
+      position: absolute;
+      padding: 10px 18px;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: 600;
+      user-select: none;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+      border: 2px solid rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(4px);
+      white-space: nowrap;
+    }
+
+    /* Categorías por colores vibrantes */
+    .subject { background: rgba(0, 153, 255, 0.85); color: #fff; }
+    .verb { background: rgba(0, 230, 118, 0.85); color: #000; }
+    .grammar { background: rgba(255, 0, 128, 0.85); color: #fff; }
+    .adj { background: rgba(255, 152, 0, 0.85); color: #000; }
+    .connector { background: rgba(156, 39, 176, 0.85); color: #fff; }
+    .time { background: rgba(255, 235, 59, 0.85); color: #000; }
+  </style>
+</head>
+<body>
+
+  <div id="header">
+    <h1>Floating Words: High A2 Challenge</h1>
+    <p>Build sentences: Modals, Future (going to/will), Past Simple & Comparisons</p>
+  </div>
+
+  <div id="controls">
+    <button id="pause-btn" onclick="togglePause()">Pausar Movimiento</button>
+  </div>
+
+  <div id="game-container"></div>
+
+  <script>
+    // 35 Palabras enfocadas en A2 Alto
+    const words = [
+      // Subjects
+      { text: "My sister", type: "subject" },
+      { text: "We", type: "subject" },
+      { text: "They", type: "subject" },
+      { text: "The doctor", type: "subject" },
+      { text: "He", type: "subject" },
+      { text: "You", type: "subject" },
+
+      // Auxiliary / Grammar (A2)
+      { text: "is going to", type: "grammar" },
+      { text: "are going to", type: "grammar" },
+      { text: "will", type: "grammar" },
+      { text: "can", type: "grammar" },
+      { text: "must", type: "grammar" },
+      { text: "have to", type: "grammar" },
+      { text: "didn't", type: "grammar" },
+
+      // Verbs (Base form & Past)
+      { text: "visit", type: "verb" },
+      { text: "travel", type: "verb" },
+      { text: "bought", type: "verb" },
+      { text: "eat", type: "verb" },
+      { text: "stay", type: "verb" },
+      { text: "went", type: "verb" },
+      { text: "play", type: "verb" },
+
+      // Adjectives & Comparatives
+      { text: "faster than", type: "adj" },
+      { text: "more expensive", type: "adj" },
+      { text: "the best", type: "adj" },
+      { text: "cheaper", type: "adj" },
+      { text: "healthy", type: "adj" },
+
+      // Connectors / Prepositions
+      { text: "because", type: "connector" },
+      { text: "but", type: "connector" },
+      { text: "so", type: "connector" },
+      { text: "next to", type: "connector" },
+      { text: "with", type: "connector" },
+
+      // Time & Objects
+      { text: "tomorrow", type: "time" },
+      { text: "last week", type: "time" },
+      { text: "at the hotel", type: "time" },
+      { text: "next summer", type: "time" },
+      { text: "a new car", type: "time" }
+    ];
+
+    const container = document.getElementById('game-container');
+    const elements = [];
+    let isPaused = false;
+
+    // Crear las tarjetas
+    words.forEach(item => {
+      const el = document.createElement('div');
+      el.className = `word-bubble ${item.type}`;
+      el.innerText = item.text;
+      container.appendChild(el);
+
+      const rect = el.getBoundingClientRect();
+      
+      // Velocidad incrementada de 2.5 a 4.5 para mayor dificultad
+      const speed = 4.5;
+
+      const obj = {
+        element: el,
+        x: Math.random() * (window.innerWidth - rect.width - 40) + 20,
+        y: Math.random() * (window.innerHeight - rect.height - 100) + 70,
+        dx: (Math.random() - 0.5) * speed,
+        dy: (Math.random() - 0.5) * speed,
+        width: rect.width,
+        height: rect.height
+      };
+
+      elements.push(obj);
+    });
+
+    // Bucle de animación
+    function animate() {
+      if (!isPaused) {
+        elements.forEach(obj => {
+          obj.x += obj.dx;
+          obj.y += obj.dy;
+
+          // Rebote horizontal
+          if (obj.x <= 10 || obj.x + obj.width >= window.innerWidth - 10) {
+            obj.dx *= -1;
+          }
+
+          // Rebote vertical
+          if (obj.y <= 70 || obj.y + obj.height >= window.innerHeight - 10) {
+            obj.dy *= -1;
+          }
+
+          obj.element.style.left = `${obj.x}px`;
+          obj.element.style.top = `${obj.y}px`;
+        });
+      }
+      requestAnimationFrame(animate);
+    }
+
+    function togglePause() {
+      isPaused = !isPaused;
+      document.getElementById('pause-btn').innerText = isPaused ? "Reanudar Movimiento" : "Pausar Movimiento";
+    }
+
+    animate();
+  </script>
+</body>
+</html>

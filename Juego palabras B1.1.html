@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Floating Words - B1 Master Challenge</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #0d0e15, #1a1c29, #251b2e);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
+      color: #fff;
+    }
+
+    #header {
+      position: absolute;
+      top: 15px;
+      left: 20px;
+      z-index: 10;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      color: #ff0055;
+      text-shadow: 0 0 12px rgba(255, 0, 85, 0.6);
+    }
+
+    p {
+      margin: 5px 0 0 0;
+      font-size: 14px;
+      color: #aaa;
+    }
+
+    #controls {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      z-index: 10;
+    }
+
+    button {
+      background: #00e676;
+      border: none;
+      color: #000;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: bold;
+      border-radius: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0, 230, 118, 0.4);
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      background: #00b0ff;
+      color: #fff;
+    }
+
+    #game-container {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+
+    .word-bubble {
+      position: absolute;
+      padding: 9px 16px;
+      border-radius: 20px;
+      font-size: 15px;
+      font-weight: 600;
+      user-select: none;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(4px);
+      white-space: nowrap;
+    }
+
+    /* Colores por tipo de palabra B1 */
+    .phrasal { background: rgba(255, 0, 85, 0.85); color: #fff; }  /* Phrasal verbs destacados */
+    .grammar { background: rgba(156, 39, 176, 0.85); color: #fff; }  /* Modales y estructuras */
+    .verb { background: rgba(0, 230, 118, 0.85); color: #000; }     /* Pasados y continuos */
+    .subject { background: rgba(0, 176, 255, 0.85); color: #fff; }  /* Sujetos */
+    .connector { background: rgba(255, 171, 0, 0.85); color: #000; }/* Conectores */
+    .time { background: rgba(0, 229, 255, 0.85); color: #000; }     /* Tiempos / Complementos */
+  </style>
+</head>
+<body>
+
+  <div id="header">
+    <h1>Floating Words: B1 Master Challenge</h1>
+    <p>Target: Phrasal Verbs, Modals, Past Tenses & Conditionals</p>
+  </div>
+
+  <div id="controls">
+    <button id="pause-btn" onclick="togglePause()">Pausar Movimiento</button>
+  </div>
+
+  <div id="game-container"></div>
+
+  <script>
+    // 40 Palabras enfocadas en B1 con Phrasal Verbs
+    const words = [
+      // Phrasal Verbs (B1)
+      { text: "give up", type: "phrasal" },
+      { text: "looking for", type: "phrasal" },
+      { text: "found out", type: "phrasal" },
+      { text: "turned on", type: "phrasal" },
+      { text: "broke down", type: "phrasal" },
+      { text: "ran out of", type: "phrasal" },
+
+      // Modals & B1 Grammar Structures
+      { text: "should have", type: "grammar" },
+      { text: "might", type: "grammar" },
+      { text: "would", type: "grammar" },
+      { text: "could", type: "grammar" },
+      { text: "have already", type: "grammar" },
+      { text: "has just", type: "grammar" },
+
+      // Verbs (Past Simple / Past Continuous / Participles)
+      { text: "was driving", type: "verb" },
+      { text: "were waiting", type: "verb" },
+      { text: "realized", type: "verb" },
+      { text: "called", type: "verb" },
+      { text: "finished", type: "verb" },
+      { text: "decided", type: "verb" },
+
+      // Connectors / Conditionals
+      { text: "while", type: "connector" },
+      { text: "although", type: "connector" },
+      { text: "if", type: "connector" },
+      { text: "unless", type: "connector" },
+      { text: "because", type: "connector" },
+      { text: "as soon as", type: "connector" },
+
+      // Subjects
+      { text: "My manager", type: "subject" },
+      { text: "The students", type: "subject" },
+      { text: "We", type: "subject" },
+      { text: "She", type: "subject" },
+      { text: "They", type: "subject" },
+      { text: "I", type: "subject" },
+
+      // Time & Complement
+      { text: "their time", type: "time" },
+      { text: "the solution", type: "time" },
+      { text: "money", type: "time" },
+      { text: "the car", type: "time" },
+      { text: "yesterday night", type: "time" },
+      { text: "at home", type: "time" },
+      { text: "a new job", type: "time" },
+      { text: "the examination", type: "time" }
+    ];
+
+    const container = document.getElementById('game-container');
+    const elements = [];
+    let isPaused = false;
+
+    // Crear las burbujas
+    words.forEach(item => {
+      const el = document.createElement('div');
+      el.className = `word-bubble ${item.type}`;
+      el.innerText = item.text;
+      container.appendChild(el);
+
+      const rect = el.getBoundingClientRect();
+      
+      // Velocidad alta ajustada
+      const speed = 5.0;
+
+      const obj = {
+        element: el,
+        x: Math.random() * (window.innerWidth - rect.width - 40) + 20,
+        y: Math.random() * (window.innerHeight - rect.height - 100) + 70,
+        dx: (Math.random() - 0.5) * speed,
+        dy: (Math.random() - 0.5) * speed,
+        width: rect.width,
+        height: rect.height
+      };
+
+      elements.push(obj);
+    });
+
+    // Bucle de animación
+    function animate() {
+      if (!isPaused) {
+        elements.forEach(obj => {
+          obj.x += obj.dx;
+          obj.y += obj.dy;
+
+          // Rebote horizontal
+          if (obj.x <= 10 || obj.x + obj.width >= window.innerWidth - 10) {
+            obj.dx *= -1;
+          }
+
+          // Rebote vertical
+          if (obj.y <= 70 || obj.y + obj.height >= window.innerHeight - 10) {
+            obj.dy *= -1;
+          }
+
+          obj.element.style.left = `${obj.x}px`;
+          obj.element.style.top = `${obj.y}px`;
+        });
+      }
+      requestAnimationFrame(animate);
+    }
+
+    function togglePause() {
+      isPaused = !isPaused;
+      document.getElementById('pause-btn').innerText = isPaused ? "Reanudar Movimiento" : "Pausar Movimiento";
+    }
+
+    animate();
+  </script>
+</body>
+</html>

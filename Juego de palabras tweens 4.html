@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Word Catcher! - 4º Primaria</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #a8ff78, #78ffd6);
+      font-family: 'Comic Sans MS', 'Chalkboard SE', 'Arial', sans-serif;
+      overflow: hidden;
+      color: #333;
+    }
+
+    #header {
+      position: absolute;
+      top: 15px;
+      left: 20px;
+      z-index: 10;
+      background: rgba(255, 255, 255, 0.85);
+      padding: 10px 20px;
+      border-radius: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 26px;
+      color: #ff4757;
+      text-shadow: 1px 1px 0px #fff;
+    }
+
+    p {
+      margin: 2px 0 0 0;
+      font-size: 14px;
+      color: #2f3542;
+      font-weight: bold;
+    }
+
+    #controls {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      z-index: 10;
+    }
+
+    button {
+      background: #ff6b81;
+      border: 3px solid #fff;
+      color: white;
+      padding: 12px 22px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      transition: transform 0.2s;
+    }
+
+    button:hover {
+      transform: scale(1.1);
+      background: #ff4757;
+    }
+
+    #game-container {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+
+    .word-bubble {
+      position: absolute;
+      padding: 12px 20px;
+      border-radius: 30px;
+      font-size: 20px;
+      font-weight: bold;
+      user-select: none;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+      border: 3px solid #fff;
+      white-space: nowrap;
+    }
+
+    /* Categorías con colores vivos de primaria */
+    .subject { background: #70a1ff; color: #fff; }   /* Azul - Sujetos */
+    .verb { background: #ff7f50; color: #fff; }      /* Naranja - Acciones/Verbos */
+    .like { background: #ff6b81; color: #fff; }      /* Rosa - Likes/Can */
+    .object { background: #2ed573; color: #fff; }    /* Verde - Animales/Comida */
+    .place { background: #eccc68; color: #333; }     /* Amarillo - Lugares */
+  </style>
+</head>
+<body>
+
+  <div id="header">
+    <h1>🎈 Word Catcher! 🎈</h1>
+    <p>Make sentences with your team!</p>
+  </div>
+
+  <div id="controls">
+    <button id="pause-btn" onclick="togglePause()">⏹️ Congelar Palabras</button>
+  </div>
+
+  <div id="game-container"></div>
+
+  <script>
+    // Vocabulario adaptado a 4.º de Primaria (30 palabras)
+    const words = [
+      // Sujetos
+      { text: "My dog", type: "subject" },
+      { text: "The monkey", type: "subject" },
+      { text: "My friends", type: "subject" },
+      { text: "She", type: "subject" },
+      { text: "He", type: "subject" },
+      { text: "We", type: "subject" },
+
+      // Gustos y Habilidades (Likes / Can)
+      { text: "likes", type: "like" },
+      { text: "doesn't like", type: "like" },
+      { text: "can", type: "like" },
+      { text: "can't", type: "like" },
+      { text: "love", type: "like" },
+
+      // Verbos / Acciones (-ing & base)
+      { text: "eating", type: "verb" },
+      { text: "playing", type: "verb" },
+      { text: "swimming", type: "verb" },
+      { text: "fly", type: "verb" },
+      { text: "run", type: "verb" },
+      { text: "is wearing", type: "verb" },
+
+      // Objetos / Comida / Animales
+      { text: "bananas", type: "object" },
+      { text: "football", type: "object" },
+      { text: "pizza", type: "object" },
+      { text: "a red T-shirt", type: "object" },
+      { text: "apples", type: "object" },
+      { text: "computer games", type: "object" },
+
+      // Lugares y Conectores simples
+      { text: "in the park", type: "place" },
+      { text: "at school", type: "place" },
+      { text: "in the river", type: "place" },
+      { text: "every day", type: "place" },
+      { text: "because", type: "place" },
+      { text: "and", type: "place" },
+      { text: "very fast", type: "place" }
+    ];
+
+    const container = document.getElementById('game-container');
+    const elements = [];
+    let isPaused = false;
+
+    // Crear las burbujas
+    words.forEach(item => {
+      const el = document.createElement('div');
+      el.className = `word-bubble ${item.type}`;
+      el.innerText = item.text;
+      container.appendChild(el);
+
+      const rect = el.getBoundingClientRect();
+      
+      // Velocidad suave para niños (3.0)
+      const speed = 3.0;
+
+      const obj = {
+        element: el,
+        x: Math.random() * (window.innerWidth - rect.width - 40) + 20,
+        y: Math.random() * (window.innerHeight - rect.height - 100) + 80,
+        dx: (Math.random() - 0.5) * speed,
+        dy: (Math.random() - 0.5) * speed,
+        width: rect.width,
+        height: rect.height
+      };
+
+      elements.push(obj);
+    });
+
+    // Bucle de animación
+    function animate() {
+      if (!isPaused) {
+        elements.forEach(obj => {
+          obj.x += obj.dx;
+          obj.y += obj.dy;
+
+          // Rebote horizontal
+          if (obj.x <= 10 || obj.x + obj.width >= window.innerWidth - 10) {
+            obj.dx *= -1;
+          }
+
+          // Rebote vertical
+          if (obj.y <= 80 || obj.y + obj.height >= window.innerHeight - 10) {
+            obj.dy *= -1;
+          }
+
+          obj.element.style.left = `${obj.x}px`;
+          obj.element.style.top = `${obj.y}px`;
+        });
+      }
+      requestAnimationFrame(animate);
+    }
+
+    function togglePause() {
+      isPaused = !isPaused;
+      document.getElementById('pause-btn').innerText = isPaused ? "▶️ ¡Mover Palabras!" : "⏹️ Congelar Palabras";
+    }
+
+    animate();
+  </script>
+</body>
+</html>

@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>The Grammar Bomb - B1 Challenge with Penalty</title>
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --accent-color: #38bdf8;
+      --danger-color: #ef4444;
+      --warning-color: #f59e0b;
+      --penalty-color: #ec4899;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background-color: var(--bg-color);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      color: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      transition: background-color 0.4s;
+    }
+
+    /* Estado de explosión */
+    body.exploded {
+      background-color: #450a0a;
+      animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+    }
+
+    @keyframes shake {
+      10%, 90% { transform: translate3d(-2px, 0, 0); }
+      20%, 80% { transform: translate3d(4px, 0, 0); }
+      30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
+      40%, 60% { transform: translate3d(8px, 0, 0); }
+    }
+
+    .container {
+      text-align: center;
+      max-width: 800px;
+      padding: 30px;
+      z-index: 2;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      margin-bottom: 5px;
+      color: var(--accent-color);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .subtitle {
+      color: #94a3b8;
+      font-size: 1.1rem;
+      margin-bottom: 25px;
+    }
+
+    /* Bomba Visual */
+    .bomb-container {
+      position: relative;
+      width: 160px;
+      height: 160px;
+      margin: 0 auto 20px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .bomb-icon {
+      font-size: 100px;
+      line-height: 1;
+      filter: drop-shadow(0 0 20px rgba(0,0,0,0.5));
+      transition: transform 0.2s;
+    }
+
+    .ticking .bomb-icon {
+      animation: pulse 0.8s infinite alternate;
+    }
+
+    .ticking-fast .bomb-icon {
+      animation: pulse 0.3s infinite alternate;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.15); }
+    }
+
+    /* Tarjeta de Categoría */
+    .card {
+      background: rgba(30, 41, 59, 0.85);
+      border: 2px solid #334155;
+      border-radius: 20px;
+      padding: 30px 25px;
+      margin-bottom: 25px;
+      min-height: 130px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+
+    .card.penalty-mode {
+      border-color: var(--penalty-color);
+      background: rgba(80, 7, 36, 0.9);
+      box-shadow: 0 0 25px rgba(236, 72, 153, 0.4);
+    }
+
+    .category-title {
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--warning-color);
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
+
+    .card.penalty-mode .category-title {
+      color: var(--penalty-color);
+    }
+
+    .category-text {
+      font-size: 1.7rem;
+      font-weight: 600;
+      color: #ffffff;
+      line-height: 1.35;
+    }
+
+    /* Botones de Control */
+    .controls {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+    }
+
+    button {
+      background: var(--accent-color);
+      color: #0f172a;
+      border: none;
+      padding: 16px 36px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.4);
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(56, 189, 248, 0.6);
+      background: #7dd3fc;
+    }
+
+    button.btn-next {
+      background: #22c55e;
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(34, 197, 94, 0.4);
+    }
+
+    button.btn-next:hover {
+      background: #4ade80;
+      box-shadow: 0 6px 20px rgba(34, 197, 94, 0.6);
+    }
+
+    button.btn-penalty {
+      background: var(--penalty-color);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(236, 72, 153, 0.4);
+    }
+
+    button.btn-penalty:hover {
+      background: #f472b6;
+      box-shadow: 0 6px 20px rgba(236, 72, 153, 0.6);
+    }
+
+    /* Overlay de Explosión */
+    .explosion-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(239, 68, 68, 0.15);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .exploded .explosion-overlay {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="explosion-overlay"></div>
+
+  <div class="container">
+    <h1>💣 The Grammar Bomb</h1>
+    <div class="subtitle">B1 Fast-Paced Speaking Challenge</div>
+
+    <div class="bomb-container" id="bombContainer">
+      <div class="bomb-icon" id="bombIcon">💣</div>
+    </div>
+
+    <div class="card" id="mainCard">
+      <div class="category-title" id="catLabel">Ready to play?</div>
+      <div class="category-text" id="catText">Press START BOMB to get a category!</div>
+    </div>
+
+    <div class="controls">
+      <button id="startBtn" onclick="startGame()">START BOMB</button>
+      <button id="nextBtn" onclick="nextTurn()" style="display: none;" class="btn-next">NEXT PLAYER ➔</button>
+      <button id="penaltyBtn" onclick="getNewPenalty()" style="display: none;" class="btn-penalty">NEW PENALTY 🔄</button>
+    </div>
+  </div>
+
+  <script>
+    // 35 Categorías B1
+    const categories = [
+      "Say a sentence with 'LOOK FOR' or 'GIVE UP'",
+      "Say a sentence using the Second Conditional (If I had... I would...)",
+      "Mention 3 things you SHOULD do before traveling abroad",
+      "Say a sentence in Past Continuous (I was working when...)",
+      "Use 'ALTHOUGH' or 'IN SPITE OF' in a complete sentence",
+      "Say a sentence using 'PRESENT PERFECT' with 'ALREADY'",
+      "Name 3 Phrasal Verbs and use one in a sentence",
+      "Say something you HAVE TO do at work or school",
+      "Make a sentence using 'USED TO' (past habits)",
+      "Use a Modal Verb of Deduction (must be, can't be, might)",
+      "Say a sentence with 'AS SOON AS' or 'UNTIL'",
+      "Compare two cities using 'MORE ... THAN' or 'AS ... AS'",
+      "Say a sentence in Passive Voice (e.g., The house was built...)",
+      "Say what you WOULD DO if you won $1,000 today",
+      "Use 'EVER' or 'NEVER' in a question to another player",
+      "Say a sentence with 'TURN ON' or 'TURN OFF'",
+      "Explain a rule using 'ALLOWED TO' or 'NOT ALLOWED TO'",
+      "Say what you WERE DOING yesterday at 8 PM",
+      "Use 'TOO MUCH' or 'NOT ENOUGH' in a sentence",
+      "Say a sentence using 'WHILE' with two actions",
+      "Give advice to someone using 'IF I WERE YOU...'",
+      "Say a sentence with 'FOUND OUT' or 'RUN OUT OF'",
+      "Make a sentence about the future using 'IS GOING TO'",
+      "Use 'UNLESS' in a sentence",
+      "Say something you MIGHT do this weekend",
+      "Make a sentence with a Relative Clause using 'WHO' or 'WHICH'",
+      "Say 3 adjectives ending in -ED and 3 ending in -ING",
+      "Say a sentence with 'COULD HAVE' or 'SHOULD HAVE'",
+      "Express an opinion using 'IN MY OPINION' and a B1 adjective",
+      "Say a sentence with 'JUST' (Present Perfect)",
+      "Name 3 food items and use them with 'FEW' or 'LITTLE'",
+      "Say a sentence about a past regret using 'I SHOULDN'T HAVE...'",
+      "Use 'SO' or 'BECAUSE OF' to explain a result",
+      "Say a sentence with 'BREAK DOWN' or 'TAKE OFF'"
+    ];
+
+    // 20 Desafíos de Penalización (Penalty Challenges B1)
+    const penalties = [
+      "🎤 Speak for 30 seconds continuously about your favorite holiday without stopping!",
+      "🎭 Pretend to be a famous actor/singer. The other two players must guess who you are in 30 seconds!",
+      "🗣️ Explain what you did yesterday using at least TWO past tenses (Past Simple & Continuous).",
+      "🔮 Invent a funny prediction about what one of your classmates will do next year using 'WILL' or 'GOING TO'.",
+      "🤔 Tell a short story (real or fake) using 3 different Phrasal Verbs!",
+      "📢 Persuade your classmates to buy an imaginary useless object in 30 seconds!",
+      "🍕 Describe your ideal dinner in full detail using at least 4 adjectives.",
+      "🚨 Tell the story of a minor accident or crazy day using 'SUDDENLY' and 'AS A RESULT'.",
+      "💼 Act out a job interview: answer 'Why should we hire you?' in 30 seconds using B1 vocabulary.",
+      "✈️ Tell us about a place you have NEVER visited, but WOULD LOVE to visit and why.",
+      "🐶 Describe your favorite animal without saying its name until they guess it!",
+      "🎒 Tell your classmates what 3 items you MUST bring if you get lost on a deserted island.",
+      "⭐ Give a 30-second review of the last movie or TV series you watched.",
+      "🕵️ Describe one of your classmates using 3 adjectives, and let the other guess who it is!",
+      "🏠 Describe your dream house using 'THERE WOULD BE...' and 'IT WOULD HAVE...'.",
+      "⏰ Speak for 30 seconds about something you USED TO do when you were 8 years old.",
+      "📱 Explain why smartphones are good or bad using 'ON ONE HAND' and 'ON THE OTHER HAND'.",
+      "🤐 Speak for 30 seconds about your morning routine WITHOUT using the word 'THEN'!",
+      "🦸 Choose a superpower (flying, invisibility, etc.) and explain how you WOULD use it.",
+      "🎁 Tell us about the best gift you HAVE EVER received and why it was special."
+    ];
+
+    let timer = null;
+    let audioCtx = null;
+    let isGameRunning = false;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playBeep(freq = 600, duration = 0.05) {
+      if (!audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) { console.log(e); }
+    }
+
+    function playExplosionSound() {
+      if (!audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(120, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.8);
+        
+        gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
+        
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.8);
+      } catch (e) { console.log(e); }
+    }
+
+    function getRandomItem(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function startGame() {
+      initAudio();
+      document.body.classList.remove('exploded');
+      document.getElementById('bombIcon').innerText = "💣";
+      
+      const card = document.getElementById('mainCard');
+      card.classList.remove('penalty-mode');
+
+      const startBtn = document.getElementById('startBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const penaltyBtn = document.getElementById('penaltyBtn');
+      
+      startBtn.style.display = 'none';
+      penaltyBtn.style.display = 'none';
+      nextBtn.style.display = 'inline-block';
+
+      showNextCategory();
+
+      // Duración aleatoria (entre 20 y 45 segundos)
+      const duration = Math.floor(Math.random() * 25) + 20; 
+      let timeLeft = duration;
+      isGameRunning = true;
+
+      const bombContainer = document.getElementById('bombContainer');
+      bombContainer.className = "bomb-container ticking";
+
+      if (timer) clearInterval(timer);
+
+      timer = setInterval(() => {
+        timeLeft--;
+
+        if (timeLeft <= 8) {
+          bombContainer.className = "bomb-container ticking-fast";
+          playBeep(900, 0.04);
+        } else {
+          playBeep(500, 0.05);
+        }
+
+        if (timeLeft <= 0) {
+          explode();
+        }
+      }, 1000);
+    }
+
+    function showNextCategory() {
+      document.getElementById('catLabel').innerText = "B1 Category";
+      document.getElementById('catText').innerText = getRandomItem(categories);
+    }
+
+    function nextTurn() {
+      if (!isGameRunning) return;
+      playBeep(1200, 0.08);
+      showNextCategory();
+    }
+
+    function getNewPenalty() {
+      playBeep(1000, 0.05);
+      document.getElementById('catLabel').innerText = "💥 PENALTY SPEAKING CHALLENGE 💥";
+      document.getElementById('catText').innerText = getRandomItem(penalties);
+    }
+
+    function explode() {
+      clearInterval(timer);
+      isGameRunning = false;
+      playExplosionSound();
+
+      document.body.classList.add('exploded');
+      document.getElementById('bombContainer').className = "bomb-container";
+      document.getElementById('bombIcon').innerText = "💥";
+
+      const card = document.getElementById('mainCard');
+      card.classList.add('penalty-mode');
+      
+      getNewPenalty();
+
+      const startBtn = document.getElementById('startBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const penaltyBtn = document.getElementById('penaltyBtn');
+
+      startBtn.innerText = "NEXT ROUND 💣";
+      startBtn.style.display = 'inline-block';
+      nextBtn.style.display = 'none';
+      penaltyBtn.style.display = 'inline-block';
+    }
+  </script>
+</body>
+</html>
